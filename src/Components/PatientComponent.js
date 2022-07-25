@@ -74,6 +74,7 @@ class PatientComp extends Component{
         switch(genInput) {
             case 'Male' : return 0;
             case 'Female' : return 1; 
+            case 'Trans' : return 2;
         }
     }
 
@@ -117,6 +118,7 @@ class PatientComp extends Component{
                                     <Input type="select" name="gender" value={this.state.gender} onChange={this.handleInputChange}>
                                     <option>Male</option>
                                     <option>Female</option>
+                                    <option>Trans</option>
                                     </Input>
                                 </Col>
                             </FormGroup>

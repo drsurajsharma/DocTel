@@ -47,6 +47,15 @@ contract DocTel{
         string[] reports;
     }
 
+    //Inform the frontend about event(some operation has been done in Blockchain)
+    event treatAdded(uint indexed treatId, uint indexed patAadhar, uint indexed adminAadhar, uint times);
+    event doctorAddedTreat(uint indexed treatId, uint indexed docAadhar,  uint times);
+    event PrescriptionAddedTreat(uint indexed treatId, string prescription,  uint times);
+    event ReportAddedTreat(uint indexed treatId, string report,  uint times);
+
+
+
+    //Mapping for easy assignment/storage and retrival from Blockchain
     mapping(uint=>Patient) public patientIds;
     mapping(uint=>Patient) public patientAadhars;
 
@@ -60,31 +69,28 @@ contract DocTel{
 
     mapping(uint => Treatment) public treatments;
 
-    event treatAdded(uint indexed treatId, uint indexed patAadhar, uint indexed adminAadhar, uint times);
-    event doctorAddedTreat(uint indexed treatId, uint indexed docAadhar,  uint times);
-    event PrescriptionAddedTreat(uint indexed treatId, string prescription,  uint times);
-    event ReportAddedTreat(uint indexed treatId, string report,  uint times);
-
+    
+    //Access Control 
     modifier onlyAdmin() {
         require(adminAddrs[msg.sender].adminAddr != address(0x0),"Not Admin");
         _;
     }
 
     modifier onlyDoctor() {
-        require(doctorAddrs[msg.sender].doctorAddress != address(0x0),"Not Admin");
+        require(doctorAddrs[msg.sender].doctorAddress != address(0x0),"Not Doctor");
         _;
     }
 
     modifier onlyAdminDoctor() {
-        require((adminAddrs[msg.sender].adminAddr != address(0x0)) || (doctorAddrs[msg.sender].doctorAddress != address(0x0)),"Not Admin");
+        require((adminAddrs[msg.sender].adminAddr != address(0x0)) || (doctorAddrs[msg.sender].doctorAddress != address(0x0)),"Not Admin or Doctor");
         _;
     }
 
-    function addPatient(uint _patientAadhar, uint _weight, uint _height, uint _gender, uint _dob, uint _bloodType, string calldata _location) onlyAdminDoctor public {
+   function addPatient(uint _patientAadhar, uint _weight, uint _height, uint _gender, uint _dob, uint _bloodType, string calldata _location) onlyAdminDoctor public {
         bool isExisting = (patientAadhars[_patientAadhar].patient_Id != 0);
         if (!isExisting) {                    //add
             patientCount++;
-            Patient memory pat;
+            Patient memory pat;             //new object created
             pat.patient_Id = patientCount;
             pat.patientAadhar = _patientAadhar;
             pat.weight = _weight;
@@ -97,7 +103,7 @@ contract DocTel{
             patientAadhars[_patientAadhar] = pat;  
         }
         else {                                  //modify
-            Patient memory pat = patientAadhars[_patientAadhar];
+            Patient memory pat = patientAadhars[_patientAadhar]; // first retrive the data then modify
             pat.patientAadhar = _patientAadhar;
             pat.weight = _weight;
             pat.height = _height;
@@ -109,7 +115,6 @@ contract DocTel{
             patientAadhars[_patientAadhar] = pat;      
         }
     }
-
     function addDoctor (uint _doctorAadhar, address _doctorAddress, string calldata _speciality, string calldata _location) public onlyAdmin{
         bool isExisting = (doctorAadhars[_doctorAadhar].doctor_Id != 0);
         if (!isExisting) {
@@ -161,7 +166,6 @@ contract DocTel{
             adminAddrs[_adminAddr] = adm;    
         }    
     }
-
     function addTreatment ( uint _adminAadhar, uint _patientAadhar) public onlyAdminDoctor{
         treatmentCount++;
         Treatment memory aux;
@@ -169,7 +173,7 @@ contract DocTel{
         aux.patientAadhar = _patientAadhar;
         aux.adminAadhar = _adminAadhar;
         treatments[treatmentCount] = aux;
-        patientAadhars[_patientAadhar].gonetreatment.push(treatmentCount);
+        patientAadhars[_patientAadhar].gonetreatment.push(treatmentCount); 
         emit treatAdded(treatmentCount, _patientAadhar, _adminAadhar, block.timestamp);
 
     }
